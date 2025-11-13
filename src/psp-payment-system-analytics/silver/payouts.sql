@@ -1,7 +1,7 @@
 CREATE OR REFRESH STREAMING LIVE TABLE silver_payouts (
   CONSTRAINT valid_payout_id EXPECT (payout_id IS NOT NULL) ON VIOLATION DROP ROW,
   CONSTRAINT valid_merchant_id EXPECT (merchant_id IS NOT NULL) ON VIOLATION DROP ROW,
-  CONSTRAINT valid_batch_day EXPECT (batch_day IS NOT NULL) ON VIOLATION DROP ROW,
+  CONSTRAINT valid_payout_batch_date EXPECT (payout_batch_date IS NOT NULL) ON VIOLATION DROP ROW,
   CONSTRAINT valid_currency EXPECT (currency IN ('USD', 'GBP', 'CAD', 'AUD')) ON VIOLATION DROP ROW,
   CONSTRAINT valid_amounts EXPECT (gross_cents > 0 AND net_cents = gross_cents - fees_cents - reserve_cents) ON VIOLATION DROP ROW,
   CONSTRAINT valid_paid_at EXPECT (paid_at IS NOT NULL) ON VIOLATION DROP ROW,

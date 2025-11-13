@@ -1,7 +1,7 @@
 CREATE OR REFRESH STREAMING LIVE TABLE silver_disputes (
   CONSTRAINT valid_dispute_id EXPECT (dispute_id IS NOT NULL) ON VIOLATION DROP ROW,
   CONSTRAINT valid_txn_id EXPECT (txn_id IS NOT NULL) ON VIOLATION DROP ROW,
-  CONSTRAINT valid_reason_code EXPECT (reason_code IS NOT NULL) ON VIOLATION DROP ROW,
+  CONSTRAINT valid_dispute_reason_code EXPECT (dispute_reason_code IS NOT NULL) ON VIOLATION DROP ROW,
   CONSTRAINT valid_amount EXPECT (amount_cents > 0) ON VIOLATION DROP ROW,
   CONSTRAINT valid_stage EXPECT (stage IN ('inquiry', 'chargeback', 'pre_arbitration', 'arbitration')) ON VIOLATION DROP ROW,
   CONSTRAINT valid_opened_at EXPECT (opened_at IS NOT NULL) ON VIOLATION DROP ROW,

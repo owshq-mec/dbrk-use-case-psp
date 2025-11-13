@@ -3,7 +3,7 @@ CREATE OR REFRESH STREAMING LIVE TABLE silver_transactions (
   CONSTRAINT valid_order_id EXPECT (order_id IS NOT NULL) ON VIOLATION DROP ROW,
   CONSTRAINT valid_payment_id EXPECT (payment_id IS NOT NULL) ON VIOLATION DROP ROW,
   CONSTRAINT valid_amount EXPECT (amount_cents > 0) ON VIOLATION DROP ROW,
-  CONSTRAINT valid_currency EXPECT (currency IN ('USD', 'GBP', 'CAD', 'AUD')) ON VIOLATION DROP ROW,
+  CONSTRAINT valid_transaction_currency EXPECT (transaction_currency IN ('USD', 'GBP', 'CAD', 'AUD')) ON VIOLATION DROP ROW,
   CONSTRAINT valid_state EXPECT (state_name IS NOT NULL) ON VIOLATION DROP ROW,
   CONSTRAINT valid_response_code EXPECT (response_code IS NOT NULL) ON VIOLATION DROP ROW,
   CONSTRAINT valid_authorized_at EXPECT (authorized_at IS NOT NULL) ON VIOLATION DROP ROW,
