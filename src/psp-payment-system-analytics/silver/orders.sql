@@ -4,8 +4,8 @@ CREATE OR REFRESH STREAMING LIVE TABLE silver_orders (
   CONSTRAINT valid_customer_id EXPECT (customer_id IS NOT NULL) ON VIOLATION DROP ROW,
   CONSTRAINT valid_order_currency EXPECT (order_currency IN ('USD', 'GBP', 'CAD', 'AUD')) ON VIOLATION DROP ROW,
   CONSTRAINT valid_amounts EXPECT (total_amount_cents > 0 AND total_amount_cents = subtotal_cents + tax_cents + tip_cents) ON VIOLATION DROP ROW,
-  CONSTRAINT valid_order_created_at EXPECT (created_at IS NOT NULL) ON VIOLATION DROP ROW,
-  CONSTRAINT valid_order_channel EXPECT (channel IN ('ecommerce', 'pos', 'mobile', 'ivr', 'api')) ON VIOLATION DROP ROW
+  CONSTRAINT valid_order_created_at EXPECT (order_created_at IS NOT NULL) ON VIOLATION DROP ROW,
+  CONSTRAINT valid_order_channel EXPECT (order_channel IN ('ecommerce', 'pos', 'mobile', 'ivr', 'api')) ON VIOLATION DROP ROW
 )
 COMMENT "Cleaned and conformed order transaction data"
 TBLPROPERTIES (

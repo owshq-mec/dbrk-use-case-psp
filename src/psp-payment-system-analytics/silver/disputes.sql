@@ -2,13 +2,12 @@ CREATE OR REFRESH STREAMING LIVE TABLE silver_disputes (
   CONSTRAINT valid_dispute_id EXPECT (dispute_id IS NOT NULL) ON VIOLATION DROP ROW,
   CONSTRAINT valid_txn_id EXPECT (txn_id IS NOT NULL) ON VIOLATION DROP ROW,
   CONSTRAINT valid_dispute_reason_code EXPECT (dispute_reason_code IS NOT NULL) ON VIOLATION DROP ROW,
-  CONSTRAINT valid_amount EXPECT (amount_cents > 0) ON VIOLATION DROP ROW,
-  CONSTRAINT valid_stage EXPECT (stage IN ('inquiry', 'chargeback', 'pre_arbitration', 'arbitration')) ON VIOLATION DROP ROW,
-  CONSTRAINT valid_opened_at EXPECT (opened_at IS NOT NULL) ON VIOLATION DROP ROW,
-  CONSTRAINT valid_closed_dates EXPECT (closed_at IS NULL OR closed_at >= opened_at) ON VIOLATION DROP ROW,
-  CONSTRAINT valid_reason_code_enum EXPECT (reason_code IN ('FRAUD', 'PRODUCT_NOT_RECEIVED', 'NOT_AS_DESCRIBED', 'DUPLICATE', 'CREDIT_NOT_PROCESSED', 'SUBSCRIPTION_CANCELED', 'OTHER')) ON VIOLATION DROP ROW,
-  CONSTRAINT valid_dispute_status EXPECT (status IN ('open', 'pending', 'won', 'lost', 'expired', 'withdrawn')) ON VIOLATION DROP ROW,
-  CONSTRAINT valid_liability EXPECT (liability IN ('merchant', 'issuer', 'network', 'shared')) ON VIOLATION DROP ROW
+  CONSTRAINT valid_dispute_amount_cents EXPECT (dispute_amount_cents > 0) ON VIOLATION DROP ROW,
+  CONSTRAINT valid_dispute_stage EXPECT (dispute_stage IN ('inquiry', 'chargeback', 'pre_arbitration', 'arbitration')) ON VIOLATION DROP ROW,
+  CONSTRAINT valid_dispute_opened_at EXPECT (dispute_opened_at IS NOT NULL) ON VIOLATION DROP ROW,
+  CONSTRAINT valid_closed_dates EXPECT (dispute_closed_at IS NULL OR dispute_closed_at >= dispute_opened_at) ON VIOLATION DROP ROW,
+  CONSTRAINT valid_dispute_status EXPECT (dispute_status IN ('open', 'pending', 'won', 'lost', 'expired', 'withdrawn')) ON VIOLATION DROP ROW,
+  CONSTRAINT valid_liability EXPECT (liability_party IN ('merchant', 'issuer', 'network', 'shared')) ON VIOLATION DROP ROW
 )
 COMMENT "Cleaned and conformed dispute and chargeback data"
 TBLPROPERTIES (

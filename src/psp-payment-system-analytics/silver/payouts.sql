@@ -2,10 +2,10 @@ CREATE OR REFRESH STREAMING LIVE TABLE silver_payouts (
   CONSTRAINT valid_payout_id EXPECT (payout_id IS NOT NULL) ON VIOLATION DROP ROW,
   CONSTRAINT valid_merchant_id EXPECT (merchant_id IS NOT NULL) ON VIOLATION DROP ROW,
   CONSTRAINT valid_payout_batch_date EXPECT (payout_batch_date IS NOT NULL) ON VIOLATION DROP ROW,
-  CONSTRAINT valid_currency EXPECT (currency IN ('USD', 'GBP', 'CAD', 'AUD')) ON VIOLATION DROP ROW,
+  CONSTRAINT valid_payout_currency EXPECT (payout_currency IN ('USD', 'GBP', 'CAD', 'AUD')) ON VIOLATION DROP ROW,
   CONSTRAINT valid_amounts EXPECT (gross_cents > 0 AND net_cents = gross_cents - fees_cents - reserve_cents) ON VIOLATION DROP ROW,
-  CONSTRAINT valid_paid_at EXPECT (paid_at IS NOT NULL) ON VIOLATION DROP ROW,
-  CONSTRAINT valid_payout_status EXPECT (status IN ('pending', 'processing', 'paid', 'failed', 'canceled', 'returned')) ON VIOLATION DROP ROW
+  CONSTRAINT valid_payout_paid_at EXPECT (payout_paid_at IS NOT NULL) ON VIOLATION DROP ROW,
+  CONSTRAINT valid_payout_status EXPECT (payout_status IN ('pending', 'processing', 'paid', 'failed', 'canceled', 'returned')) ON VIOLATION DROP ROW
 )
 COMMENT "Cleaned and conformed merchant payout and settlement data"
 TBLPROPERTIES (
@@ -35,7 +35,6 @@ AS SELECT
 
   transaction_count AS payout_transaction_count,
   round(gross_cents / transaction_count / 100.0, 2) AS avg_transaction_amount,
-
 
   CASE
     WHEN status = 'paid' THEN true

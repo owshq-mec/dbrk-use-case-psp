@@ -4,11 +4,11 @@ CREATE OR REFRESH STREAMING LIVE TABLE silver_transactions (
   CONSTRAINT valid_payment_id EXPECT (payment_id IS NOT NULL) ON VIOLATION DROP ROW,
   CONSTRAINT valid_amount EXPECT (amount_cents > 0) ON VIOLATION DROP ROW,
   CONSTRAINT valid_transaction_currency EXPECT (transaction_currency IN ('USD', 'GBP', 'CAD', 'AUD')) ON VIOLATION DROP ROW,
-  CONSTRAINT valid_state EXPECT (state_name IS NOT NULL) ON VIOLATION DROP ROW,
+  CONSTRAINT valid_transaction_state EXPECT (transaction_state IS NOT NULL) ON VIOLATION DROP ROW,
   CONSTRAINT valid_response_code EXPECT (response_code IS NOT NULL) ON VIOLATION DROP ROW,
-  CONSTRAINT valid_authorized_at EXPECT (authorized_at IS NOT NULL) ON VIOLATION DROP ROW,
+  CONSTRAINT valid_transaction_authorized_at EXPECT (transaction_authorized_at IS NOT NULL) ON VIOLATION DROP ROW,
   CONSTRAINT valid_processor EXPECT (processor_name IN ('stripe', 'adyen', 'braintree', 'worldpay', 'authorize_net')) ON VIOLATION DROP ROW,
-  CONSTRAINT valid_3ds_status EXPECT (three_ds IN ('none', 'attempted', 'frictionless', 'challenge', 'failed')) ON VIOLATION DROP ROW
+  CONSTRAINT valid_three_ds_status EXPECT (three_ds_status IN ('none', 'attempted', 'frictionless', 'challenge', 'failed')) ON VIOLATION DROP ROW
 )
 COMMENT "Cleaned and conformed payment transaction data with state lifecycle"
 TBLPROPERTIES (
