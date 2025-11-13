@@ -1,7 +1,3 @@
--- Silver Layer 1: Disputes
--- Cleansed and conformed dispute/chargeback data with data quality checks
--- Transformations: Validate disputes, calculate resolution times, categorize reasons
-
 CREATE OR REFRESH STREAMING LIVE TABLE silver_disputes (
   CONSTRAINT valid_dispute_id EXPECT (dispute_id IS NOT NULL) ON VIOLATION DROP ROW,
   CONSTRAINT valid_txn_id EXPECT (txn_id IS NOT NULL) ON VIOLATION DROP ROW,
@@ -20,19 +16,14 @@ TBLPROPERTIES (
   "pipelines.autoOptimize.zOrderCols" = "dispute_id,txn_id,stage"
 )
 AS SELECT
-  -- Primary Key
   dispute_id,
-
-  -- Foreign Keys
   txn_id,
 
-  -- Dispute Details
   upper(reason_code) AS dispute_reason_code,
   lower(stage) AS dispute_stage,
   lower(liability) AS liability_party,
   lower(status) AS dispute_status,
 
-  -- Dispute Reason Classification
   CASE
     WHEN reason_code = 'FRAUD' THEN 'fraud_related'
     WHEN reason_code IN ('PRODUCT_NOT_RECEIVED', 'NOT_AS_DESCRIBED') THEN 'service_issue'
@@ -41,11 +32,8 @@ AS SELECT
     ELSE 'other'
   END AS dispute_category,
 
-  -- Financial Impact
   amount_cents AS dispute_amount_cents,
   round(amount_cents / 100.0, 2) AS dispute_amount,
-
-  -- Dispute Lifecycle
   opened_at AS dispute_opened_at,
   closed_at AS dispute_closed_at,
   CASE
@@ -53,7 +41,6 @@ AS SELECT
     ELSE datediff(current_date(), date(opened_at))
   END AS dispute_age_days,
 
-  -- Derived Flags
   CASE
     WHEN closed_at IS NOT NULL THEN true
     ELSE false
@@ -79,7 +66,6 @@ AS SELECT
     ELSE false
   END AS is_escalated,
 
-  -- Stage Severity (1=lowest, 4=highest)
   CASE
     WHEN stage = 'inquiry' THEN 1
     WHEN stage = 'chargeback' THEN 2
@@ -87,10 +73,8 @@ AS SELECT
     WHEN stage = 'arbitration' THEN 4
   END AS stage_severity_level,
 
-  -- Timestamps
   date(opened_at) AS dispute_opened_date,
 
-  -- Metadata
   ingestion_timestamp,
   current_timestamp() AS silver_processed_at
 

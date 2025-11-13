@@ -1,7 +1,3 @@
--- Silver Layer 1: Payments
--- Cleansed and conformed payment instrument data with data quality checks
--- Transformations: Validate card data, mask PAN fragments, check expiry
-
 CREATE OR REFRESH STREAMING LIVE TABLE silver_payments (
   CONSTRAINT valid_payment_id EXPECT (payment_id IS NOT NULL) ON VIOLATION DROP ROW,
   CONSTRAINT valid_customer_id EXPECT (customer_id IS NOT NULL) ON VIOLATION DROP ROW,
@@ -19,13 +15,9 @@ TBLPROPERTIES (
   "pipelines.autoOptimize.zOrderCols" = "payment_id,customer_id,brand"
 )
 AS SELECT
-  -- Primary Key
   payment_id,
-
-  -- Foreign Keys
   customer_id,
 
-  -- Card Details
   lower(brand) AS card_brand,
   bin AS card_bin,
   concat('****', last4) AS card_last4_masked,
@@ -33,16 +25,13 @@ AS SELECT
   expiry_month AS card_expiry_month,
   expiry_year AS card_expiry_year,
 
-  -- Wallet Information
   CASE
     WHEN wallet_type IS NULL THEN 'card'
     ELSE lower(wallet_type)
   END AS wallet_type,
 
-  -- Card Status
   lower(status) AS payment_status,
 
-  -- Derived Flags
   CASE
     WHEN status = 'active' THEN true
     ELSE false
@@ -56,17 +45,13 @@ AS SELECT
     ELSE false
   END AS is_expired,
 
-  -- Card Network Classification
   CASE
     WHEN brand IN ('visa', 'mastercard', 'discover') THEN 'general'
     WHEN brand = 'amex' THEN 'premium'
     WHEN brand = 'diners' THEN 'specialty'
   END AS card_network_tier,
 
-  -- Timestamps
   first_seen_at AS payment_first_seen_at,
-
-  -- Metadata
   ingestion_timestamp,
   current_timestamp() AS silver_processed_at
 

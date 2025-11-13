@@ -1,7 +1,3 @@
--- Silver Layer 1: Transactions
--- Cleansed and conformed transaction data with data quality checks
--- Transformations: Flatten state, convert timestamps, calculate fees, validate lifecycle
-
 CREATE OR REFRESH STREAMING LIVE TABLE silver_transactions (
   CONSTRAINT valid_txn_id EXPECT (txn_id IS NOT NULL) ON VIOLATION DROP ROW,
   CONSTRAINT valid_order_id EXPECT (order_id IS NOT NULL) ON VIOLATION DROP ROW,
@@ -20,23 +16,16 @@ TBLPROPERTIES (
   "pipelines.autoOptimize.zOrderCols" = "txn_id,order_id,payment_id,state_name"
 )
 AS SELECT
-  -- Primary Key
   txn_id,
-
-  -- Foreign Keys
   order_id,
   payment_id,
 
-  -- Transaction Amount
   currency AS transaction_currency,
   amount_cents,
   round(amount_cents / 100.0, 2) AS transaction_amount,
-
-  -- Transaction State (Flattened from nested struct)
   lower(state_name) AS transaction_state,
   from_unixtime(state_timestamp / 1000) AS state_timestamp,
 
-  -- State Classification
   CASE
     WHEN state_name IN ('completed', 'closed') THEN 'terminal_success'
     WHEN state_name IN ('failed', 'cancelled') THEN 'terminal_failure'
@@ -45,7 +34,6 @@ AS SELECT
     ELSE 'in_progress'
   END AS transaction_state_category,
 
-  -- Response Code
   response_code,
   CASE
     WHEN response_code = '00' THEN 'approved'
@@ -57,28 +45,21 @@ AS SELECT
     ELSE 'other'
   END AS response_code_description,
 
-  -- 3D Secure
   lower(three_ds) AS three_ds_status,
   CASE
     WHEN three_ds IN ('frictionless', 'challenge') THEN true
     ELSE false
   END AS is_3ds_authenticated,
 
-  -- Fees
   fees_total_cents,
   round(fees_total_cents / 100.0, 2) AS fees_total_amount,
   network_fee_cents,
   round(network_fee_cents / 100.0, 2) AS network_fee_amount,
-
-  -- Calculated Metrics
   round((fees_total_cents / amount_cents) * 100, 2) AS effective_fee_rate_pct,
   amount_cents - fees_total_cents AS net_amount_cents,
   round((amount_cents - fees_total_cents) / 100.0, 2) AS net_amount,
-
-  -- Processor
   lower(processor_name) AS processor_name,
 
-  -- Derived Flags
   CASE
     WHEN state_name IN ('completed', 'closed') THEN true
     ELSE false
@@ -96,13 +77,11 @@ AS SELECT
     ELSE false
   END AS is_declined,
 
-  -- Timestamps
   authorized_at AS transaction_authorized_at,
   date(authorized_at) AS transaction_date,
   hour(authorized_at) AS transaction_hour,
   dayofweek(authorized_at) AS transaction_day_of_week,
 
-  -- Metadata
   ingestion_timestamp,
   current_timestamp() AS silver_processed_at
 

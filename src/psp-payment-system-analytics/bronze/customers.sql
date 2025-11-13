@@ -12,11 +12,13 @@ AS SELECT
   customer_type,
   created_at,
   current_timestamp() AS ingestion_timestamp,
-  _metadata.file_path AS source_file
+  input_file_name() AS source_file
 FROM cloud_files(
   "/Volumes/psp/analytics/vol-landing-zone/customers*",
   "json",
   map(
-    "cloudFiles.inferColumnTypes", "true"
+    "cloudFiles.inferColumnTypes", "true",
+    "cloudFiles.schemaHints", "customer_id STRING, created_at TIMESTAMP",
+    "cloudFiles.schemaLocation", "/Volumes/psp/analytics/vol-schema/customers"
   )
 );
