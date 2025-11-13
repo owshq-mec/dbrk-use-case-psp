@@ -8,7 +8,8 @@ CREATE OR REFRESH STREAMING LIVE TABLE silver_payouts (
   CONSTRAINT valid_batch_day EXPECT (batch_day IS NOT NULL) ON VIOLATION DROP ROW,
   CONSTRAINT valid_currency EXPECT (currency IN ('USD', 'GBP', 'CAD', 'AUD')) ON VIOLATION DROP ROW,
   CONSTRAINT valid_amounts EXPECT (gross_cents > 0 AND net_cents = gross_cents - fees_cents - reserve_cents) ON VIOLATION DROP ROW,
-  CONSTRAINT valid_paid_at EXPECT (paid_at IS NOT NULL) ON VIOLATION DROP ROW
+  CONSTRAINT valid_paid_at EXPECT (paid_at IS NOT NULL) ON VIOLATION DROP ROW,
+  CONSTRAINT valid_payout_status EXPECT (status IN ('pending', 'processing', 'paid', 'failed', 'canceled', 'returned')) ON VIOLATION DROP ROW
 )
 COMMENT "Cleaned and conformed merchant payout and settlement data"
 TBLPROPERTIES (

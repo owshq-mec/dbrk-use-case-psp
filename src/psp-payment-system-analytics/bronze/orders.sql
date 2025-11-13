@@ -1,7 +1,3 @@
--- Bronze Layer: Orders
--- Raw order data with financial breakdowns (subtotal, tax, tips)
--- Source: Azure Blob Storage via ShadowTraffic generator
-
 CREATE OR REFRESH STREAMING LIVE TABLE bronze_orders
 COMMENT "Raw order transaction data from PSP system"
 TBLPROPERTIES (
@@ -21,13 +17,11 @@ AS SELECT
   channel,
   created_at,
   current_timestamp() AS ingestion_timestamp,
-  input_file_name() AS source_file
+  _metadata.file_path AS source_file
 FROM cloud_files(
-  "/Volumes/psp/default/vol_landing_zone/orders*",
+  "/Volumes/psp/analytics/vol-landing-zone/orders*",
   "json",
   map(
-    "cloudFiles.inferColumnTypes", "true",
-    "cloudFiles.schemaHints", "order_id STRING, merchant_id STRING, customer_id STRING, created_at TIMESTAMP",
-    "cloudFiles.schemaLocation", "/Volumes/psp/default/vol_schema/orders"
+    "cloudFiles.inferColumnTypes", "true"
   )
 );

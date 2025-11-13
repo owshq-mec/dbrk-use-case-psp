@@ -219,7 +219,9 @@ SELECT
   END AS revenue_tier,
 
   -- Metadata
-  current_timestamp() AS gold_created_at
+  current_timestamp() AS gold_created_at,
+  current_date() AS snapshot_date,
+  current_timestamp() AS metrics_calculated_at
 
 FROM daily_transactions dt
 LEFT JOIN daily_payouts dp

@@ -1,7 +1,3 @@
--- Bronze Layer: Disputes
--- Raw chargeback and dispute data with reason codes and liability
--- Source: Azure Blob Storage via ShadowTraffic generator
-
 CREATE OR REFRESH STREAMING LIVE TABLE bronze_disputes
 COMMENT "Raw dispute and chargeback data from PSP system"
 TBLPROPERTIES (
@@ -20,13 +16,11 @@ AS SELECT
   liability,
   status,
   current_timestamp() AS ingestion_timestamp,
-  input_file_name() AS source_file
+  _metadata.file_path AS source_file
 FROM cloud_files(
-  "/Volumes/psp/default/vol_landing_zone/disputes*",
+  "/Volumes/psp/analytics/vol-landing-zone/disputes*",
   "json",
   map(
-    "cloudFiles.inferColumnTypes", "true",
-    "cloudFiles.schemaHints", "dispute_id STRING, txn_id STRING, opened_at TIMESTAMP, closed_at TIMESTAMP",
-    "cloudFiles.schemaLocation", "/Volumes/psp/default/vol_schema/disputes"
+    "cloudFiles.inferColumnTypes", "true"
   )
 );

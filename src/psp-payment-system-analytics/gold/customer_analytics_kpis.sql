@@ -101,8 +101,8 @@ WITH customer_transactions AS (
     ) AS high_value_order_pct,
 
     -- Merchant Concentration
-    -- Using MAX as proxy for most frequent merchant (simplified)
-    MAX(merchant_legal_name) AS sample_merchant,
+    -- Using FIRST as deterministic sample (order by transaction recency)
+    FIRST(merchant_legal_name) IGNORE NULLS AS sample_merchant,
 
     -- Geographic Diversity
     COUNT(DISTINCT merchant_country) AS countries_transacted,
@@ -253,6 +253,8 @@ SELECT
   ) AS customer_health_score,
 
   -- Metadata
-  current_timestamp() AS gold_created_at
+  current_timestamp() AS gold_created_at,
+  current_date() AS snapshot_date,
+  current_timestamp() AS metrics_calculated_at
 
 FROM customer_transactions;

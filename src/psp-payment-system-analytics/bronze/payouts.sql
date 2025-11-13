@@ -1,7 +1,3 @@
--- Bronze Layer: Payouts
--- Raw merchant payout/settlement data with fees and reserves
--- Source: Azure Blob Storage via ShadowTraffic generator
-
 CREATE OR REFRESH STREAMING LIVE TABLE bronze_payouts
 COMMENT "Raw merchant payout and settlement data from PSP system"
 TBLPROPERTIES (
@@ -22,13 +18,11 @@ AS SELECT
   paid_at,
   transaction_count,
   current_timestamp() AS ingestion_timestamp,
-  input_file_name() AS source_file
+  _metadata.file_path AS source_file
 FROM cloud_files(
-  "/Volumes/psp/default/vol_landing_zone/payouts*",
+  "/Volumes/psp/analytics/vol-landing-zone/payouts*",
   "json",
   map(
-    "cloudFiles.inferColumnTypes", "true",
-    "cloudFiles.schemaHints", "payout_id STRING, merchant_id STRING, batch_day DATE, paid_at TIMESTAMP",
-    "cloudFiles.schemaLocation", "/Volumes/psp/default/vol_schema/payouts"
+    "cloudFiles.inferColumnTypes", "true"
   )
 );

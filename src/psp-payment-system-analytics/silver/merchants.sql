@@ -7,7 +7,10 @@ CREATE OR REFRESH STREAMING LIVE TABLE silver_merchants (
   CONSTRAINT valid_legal_name EXPECT (legal_name IS NOT NULL AND length(trim(legal_name)) > 0) ON VIOLATION DROP ROW,
   CONSTRAINT valid_country EXPECT (country IN ('US', 'GB', 'CA', 'AU')) ON VIOLATION DROP ROW,
   CONSTRAINT valid_mcc EXPECT (length(mcc) = 4 AND mcc RLIKE '^[0-9]{4}$') ON VIOLATION DROP ROW,
-  CONSTRAINT valid_created_at EXPECT (created_at IS NOT NULL) ON VIOLATION DROP ROW
+  CONSTRAINT valid_created_at EXPECT (created_at IS NOT NULL) ON VIOLATION DROP ROW,
+  CONSTRAINT valid_kyb_status EXPECT (kyb_status IN ('pending', 'approved', 'rejected', 'under_review')) ON VIOLATION DROP ROW,
+  CONSTRAINT valid_pricing_tier EXPECT (pricing_tier IN ('starter', 'growth', 'enterprise', 'custom')) ON VIOLATION DROP ROW,
+  CONSTRAINT valid_risk_level EXPECT (risk_level IN ('low', 'medium', 'high', 'critical')) ON VIOLATION DROP ROW
 )
 COMMENT "Cleaned and conformed merchant account data"
 TBLPROPERTIES (

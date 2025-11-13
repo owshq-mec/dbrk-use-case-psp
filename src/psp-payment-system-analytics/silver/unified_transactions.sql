@@ -171,18 +171,18 @@ AS SELECT
 FROM STREAM(LIVE.silver_transactions) t
 
 -- Core Joins (Inner - all transactions must have these)
-INNER JOIN LIVE.silver_orders o
+INNER JOIN STREAM(LIVE.silver_orders) o
   ON t.order_id = o.order_id
 
-INNER JOIN LIVE.silver_merchants m
+INNER JOIN STREAM(LIVE.silver_merchants) m
   ON o.merchant_id = m.merchant_id
 
-INNER JOIN LIVE.silver_customers c
+INNER JOIN STREAM(LIVE.silver_customers) c
   ON o.customer_id = c.customer_id
 
-INNER JOIN LIVE.silver_payments p
+INNER JOIN STREAM(LIVE.silver_payments) p
   ON t.payment_id = p.payment_id
 
 -- Optional Joins (Left - not all transactions have these)
-LEFT JOIN LIVE.silver_disputes d
+LEFT JOIN STREAM(LIVE.silver_disputes) d
   ON t.txn_id = d.txn_id;

@@ -1,7 +1,3 @@
--- Bronze Layer: Payments
--- Raw payment instrument data (cards) with brand, BIN, and wallet information
--- Source: Azure Blob Storage via ShadowTraffic generator
-
 CREATE OR REFRESH STREAMING LIVE TABLE bronze_payments
 COMMENT "Raw payment instrument data from PSP system"
 TBLPROPERTIES (
@@ -21,13 +17,11 @@ AS SELECT
   status,
   first_seen_at,
   current_timestamp() AS ingestion_timestamp,
-  input_file_name() AS source_file
+  _metadata.file_path AS source_file
 FROM cloud_files(
-  "/Volumes/psp/default/vol_landing_zone/payments*",
+  "/Volumes/psp/analytics/vol-landing-zone/payments*",
   "json",
   map(
-    "cloudFiles.inferColumnTypes", "true",
-    "cloudFiles.schemaHints", "payment_id STRING, customer_id STRING, first_seen_at TIMESTAMP",
-    "cloudFiles.schemaLocation", "/Volumes/psp/default/vol_schema/payments"
+    "cloudFiles.inferColumnTypes", "true"
   )
 );

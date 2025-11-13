@@ -9,7 +9,9 @@ CREATE OR REFRESH STREAMING LIVE TABLE silver_payments (
   CONSTRAINT valid_bin EXPECT (length(bin) = 6 AND bin RLIKE '^[0-9]{6}$') ON VIOLATION DROP ROW,
   CONSTRAINT valid_last4 EXPECT (length(last4) = 4 AND last4 RLIKE '^[0-9]{4}$') ON VIOLATION DROP ROW,
   CONSTRAINT valid_expiry_month EXPECT (expiry_month BETWEEN 1 AND 12) ON VIOLATION DROP ROW,
-  CONSTRAINT valid_expiry_year EXPECT (expiry_year BETWEEN 2024 AND 2035) ON VIOLATION DROP ROW
+  CONSTRAINT valid_expiry_year EXPECT (expiry_year BETWEEN 2024 AND 2035) ON VIOLATION DROP ROW,
+  CONSTRAINT valid_wallet_type EXPECT (wallet_type IS NULL OR wallet_type IN ('apple_pay', 'google_pay', 'samsung_pay', 'paypal')) ON VIOLATION DROP ROW,
+  CONSTRAINT valid_payment_status EXPECT (status IN ('active', 'inactive', 'expired', 'suspended')) ON VIOLATION DROP ROW
 )
 COMMENT "Cleaned and conformed payment instrument data"
 TBLPROPERTIES (
