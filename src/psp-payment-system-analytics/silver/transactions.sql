@@ -7,7 +7,7 @@ CREATE OR REFRESH STREAMING LIVE TABLE silver_transactions (
   CONSTRAINT valid_transaction_state EXPECT (transaction_state IS NOT NULL) ON VIOLATION DROP ROW,
   CONSTRAINT valid_response_code EXPECT (response_code IS NOT NULL) ON VIOLATION DROP ROW,
   CONSTRAINT valid_transaction_authorized_at EXPECT (transaction_authorized_at IS NOT NULL) ON VIOLATION DROP ROW,
-  CONSTRAINT valid_processor EXPECT (processor_name IN ('stripe', 'adyen', 'braintree', 'worldpay', 'authorize_net')) ON VIOLATION DROP ROW,
+  CONSTRAINT valid_processor EXPECT (processor_name IN ('mastercard_network', 'discover_network', 'visa_network', 'amex_network')) ON VIOLATION DROP ROW,
   CONSTRAINT valid_three_ds_status EXPECT (three_ds_status IN ('none', 'attempted', 'frictionless', 'challenge', 'failed')) ON VIOLATION DROP ROW
 )
 COMMENT "Cleaned and conformed payment transaction data with state lifecycle"

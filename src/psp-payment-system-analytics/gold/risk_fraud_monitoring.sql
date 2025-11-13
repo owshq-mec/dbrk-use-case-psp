@@ -1,21 +1,14 @@
--- Gold Layer: Risk & Fraud Monitoring
--- Real-time risk indicators, fraud patterns, and dispute analytics
--- Source: Silver Layer 2 unified_transactions table
--- Grain: One row per transaction with risk scoring
-
 CREATE OR REFRESH LIVE TABLE gold_risk_fraud_monitoring
 COMMENT "Transaction-level risk scoring and fraud detection indicators"
 TBLPROPERTIES ("quality" = "gold")
 AS
 WITH risk_calculations AS (
   SELECT
-    -- Transaction Identity
     txn_id,
     transaction_date,
     transaction_authorized_at,
     order_id,
 
-    -- Core Entities
     merchant_id,
     merchant_legal_name,
     merchant_category_code,
@@ -36,7 +29,6 @@ WITH risk_calculations AS (
     wallet_type,
     is_wallet_payment,
 
-    -- Transaction Details
     transaction_amount,
     transaction_currency,
     transaction_state,
@@ -47,11 +39,9 @@ WITH risk_calculations AS (
     is_failed_transaction,
     is_declined,
 
-    -- Security Indicators
     three_ds_status,
     is_3ds_authenticated,
 
-    -- Dispute Information
     has_dispute,
     dispute_id,
     dispute_reason_code,
@@ -71,7 +61,6 @@ WITH risk_calculations AS (
     dispute_age_days,
     is_dispute_closed,
 
-    -- Order Context
     order_channel,
     is_ecommerce_order,
     order_size_category,
@@ -79,20 +68,13 @@ WITH risk_calculations AS (
     order_hour,
     order_day_of_week,
 
-    -- Relationship Ages (Fraud Indicator)
     days_since_customer_created,
     days_since_merchant_created,
     days_since_payment_first_seen,
 
-    -- Financial Impact
     psp_revenue AS transaction_fees,
     merchant_net_revenue,
 
-    -- ============================================================================
-    -- RISK SCORE COMPONENTS (Calculated Once)
-    -- ============================================================================
-
-    -- 1. Merchant Risk Score (0-30 points)
     (
       CASE
         WHEN merchant_risk_level = 'critical' THEN 30
@@ -103,7 +85,6 @@ WITH risk_calculations AS (
       CASE WHEN NOT is_merchant_kyb_approved THEN 10 ELSE 0 END
     ) AS merchant_risk_score,
 
-    -- 2. Customer Risk Score (0-30 points)
     (
       CASE
         WHEN is_flagged_customer THEN 30
@@ -114,7 +95,6 @@ WITH risk_calculations AS (
       CASE WHEN is_vip_customer THEN -10 ELSE 0 END
     ) AS customer_risk_score,
 
-    -- 3. Transaction Pattern Risk Score (0-40 points)
     (
       CASE
         WHEN transaction_amount > 1000 THEN 15
@@ -127,9 +107,6 @@ WITH risk_calculations AS (
       CASE WHEN days_since_payment_first_seen < 1 THEN 10 ELSE 0 END
     ) AS transaction_pattern_risk_score,
 
-    -- ============================================================================
-    -- FRAUD INDICATORS (Boolean Flags)
-    -- ============================================================================
     CASE WHEN is_fraud_dispute THEN true ELSE false END AS confirmed_fraud,
     CASE WHEN has_dispute AND dispute_category = 'fraud_related' THEN true ELSE false END AS suspected_fraud,
     CASE WHEN is_flagged_customer AND is_declined THEN true ELSE false END AS flagged_customer_decline,
@@ -142,13 +119,11 @@ WITH risk_calculations AS (
 )
 
 SELECT
-  -- Pass through all base columns
   txn_id,
   transaction_date,
   transaction_authorized_at,
   order_id,
 
-  -- Core Entities
   merchant_id,
   merchant_legal_name,
   merchant_category_code,
@@ -168,7 +143,6 @@ SELECT
   wallet_type,
   is_wallet_payment,
 
-  -- Transaction Details
   transaction_amount,
   transaction_currency,
   transaction_state,
@@ -179,11 +153,9 @@ SELECT
   is_failed_transaction,
   is_declined,
 
-  -- Security Indicators
   three_ds_status,
   is_3ds_authenticated,
 
-  -- Dispute Information
   has_dispute,
   dispute_id,
   dispute_reason_code,
@@ -202,7 +174,6 @@ SELECT
   dispute_closed_at,
   dispute_age_days,
 
-  -- Order Context
   order_channel,
   is_ecommerce_order,
   order_size_category,
@@ -210,33 +181,22 @@ SELECT
   order_hour,
   order_day_of_week,
 
-  -- Relationship Ages (Fraud Indicator)
   days_since_customer_created,
   days_since_merchant_created,
   days_since_payment_first_seen,
 
-  -- Financial Impact
   transaction_fees,
   merchant_net_revenue,
 
-  -- ============================================================================
-  -- RISK SCORING COMPONENTS (From CTE)
-  -- ============================================================================
   merchant_risk_score,
   customer_risk_score,
   transaction_pattern_risk_score,
 
-  -- ============================================================================
-  -- TOTAL RISK SCORE (0-100) - Calculated Once Using CTE Columns
-  -- ============================================================================
   LEAST(
     merchant_risk_score + customer_risk_score + transaction_pattern_risk_score,
     100
   ) AS total_risk_score,
 
-  -- ============================================================================
-  -- RISK CLASSIFICATION - Based on Total Risk Score
-  -- ============================================================================
   CASE
     WHEN LEAST(merchant_risk_score + customer_risk_score + transaction_pattern_risk_score, 100) >= 70 THEN 'critical'
     WHEN LEAST(merchant_risk_score + customer_risk_score + transaction_pattern_risk_score, 100) >= 50 THEN 'high'
@@ -244,9 +204,6 @@ SELECT
     ELSE 'low'
   END AS risk_classification,
 
-  -- ============================================================================
-  -- FRAUD INDICATORS (From CTE)
-  -- ============================================================================
   confirmed_fraud,
   suspected_fraud,
   flagged_customer_decline,
@@ -255,7 +212,6 @@ SELECT
   new_customer_high_value,
   late_night_high_value,
 
-  -- Multiple Risk Flags Count
   (
     CASE WHEN confirmed_fraud THEN 1 ELSE 0 END +
     CASE WHEN suspected_fraud THEN 1 ELSE 0 END +
@@ -266,9 +222,6 @@ SELECT
     CASE WHEN late_night_high_value THEN 1 ELSE 0 END
   ) AS fraud_indicator_count,
 
-  -- ============================================================================
-  -- ACTION RECOMMENDATION - Using Computed Columns
-  -- ============================================================================
   CASE
     WHEN confirmed_fraud OR (
       CASE WHEN confirmed_fraud THEN 1 ELSE 0 END +
@@ -285,7 +238,6 @@ SELECT
     ELSE 'normal'
   END AS recommended_action,
 
-  -- Metadata
   current_timestamp() AS gold_created_at,
   current_date() AS snapshot_date,
   current_timestamp() AS metrics_calculated_at
