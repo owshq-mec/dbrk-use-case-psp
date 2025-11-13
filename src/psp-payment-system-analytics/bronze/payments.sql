@@ -22,6 +22,8 @@ FROM cloud_files(
   "/Volumes/psp/analytics/vol-landing-zone/payments*",
   "json",
   map(
-    "cloudFiles.inferColumnTypes", "true"
+    "cloudFiles.inferColumnTypes", "true",
+    "cloudFiles.schemaHints", "payment_id STRING, customer_id STRING, first_seen_at TIMESTAMP",
+    "cloudFiles.schemaLocation", "/Volumes/psp/default/vol_schema/payments"
   )
 );
